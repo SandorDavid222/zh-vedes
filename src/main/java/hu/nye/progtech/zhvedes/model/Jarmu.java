@@ -1,6 +1,6 @@
 package hu.nye.progtech.zhvedes.model;
 
-/**
+/*
  * Egy jármű a táblán. A hossz 2 vagy 3.
  */
 public record Jarmu(
