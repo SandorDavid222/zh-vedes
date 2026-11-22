@@ -14,10 +14,10 @@ public class JatekLogika {
     /*
      * Végrehajtja a jármű mozgatását a táblán
      */
-    public void mozgat(Tabla tabla, Jarmu jarmu, int deltaSor, int deltaOszlop) {
+    public boolean mozgat(Tabla tabla, Jarmu jarmu, int deltaSor, int deltaOszlop) {
         if (!lepesEllenorzo.elmozdithato(tabla, jarmu, deltaSor, deltaOszlop)) {
             System.out.println("Nem jó lépés!");
-            return;
+            return false;
         }
 
         // Végigmegyünk a járművel az útvonalon amíg szabad
@@ -46,6 +46,28 @@ public class JatekLogika {
         System.out.println("Jármű (" + jarmu.azonosito() + ") mozgatva: " +
                 jarmu.pozicio().sor() + "," + jarmu.pozicio().oszlop() +
                 " -> " + aktualisSor + "," + aktualisOszlop);
+
+        return true;
+    }
+
+    /*
+     * Ellenőrzi hogy egy adott jármű kijutott e a tábláról a saját kijaratan
+     * pl hogy az A jármű a jobb oldalon a B jármű a bal oldalon
+     */
+    public boolean nyertE(Tabla tabla, String jarmuAzonosito) {
+        for (Jarmu j : tabla.jarmuvek()) {
+            if (j.azonosito().equals(jarmuAzonosito)) {
+                // Ha az A járműről van szó akkor a jobb szélen kell lennie
+                if ("A".equals(jarmuAzonosito)) {
+                    return j.pozicio().oszlop() >= tabla.oszlopokSzama();
+                }
+                // Ha a B járműről van szó akkor a bal szélen kell lennie
+                if ("B".equals(jarmuAzonosito)) {
+                    return j.pozicio().oszlop() < 0;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean vanJarmu(Tabla tabla, int sor, int oszlop, Jarmu sajatJarmu) {
