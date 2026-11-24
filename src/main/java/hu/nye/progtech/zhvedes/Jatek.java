@@ -50,7 +50,10 @@ public class Jatek {
         System.out.println("------------------\n");
 
         // Pálya betöltése
-        Tabla tabla = tablaBetolto.betoltAlap();
+        Tabla tabla = tablaBetolto.betolt("alap-palya.txt");
+        if (tabla == null) {
+            tabla = tablaBetolto.betoltAlap();
+        }
 
         // Ha a betöltés null t adna vissza
         if (tabla == null) {
