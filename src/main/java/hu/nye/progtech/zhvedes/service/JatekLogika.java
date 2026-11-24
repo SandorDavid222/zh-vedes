@@ -1,7 +1,11 @@
 package hu.nye.progtech.zhvedes.service;
 
 import hu.nye.progtech.zhvedes.model.Jarmu;
+import hu.nye.progtech.zhvedes.model.Pozicio;
 import hu.nye.progtech.zhvedes.model.Tabla;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JatekLogika {
 
@@ -12,15 +16,15 @@ public class JatekLogika {
     }
 
     /*
-     * Végrehajtja a jármű mozgatását a táblán
+     * Végrehajtja a jármű mozgatását a táblán.
+     * Visszatér a frissített táblával, vagy null-lal, ha a lépés érvénytelen.
      */
-    public boolean mozgat(Tabla tabla, Jarmu jarmu, int deltaSor, int deltaOszlop) {
+    public Tabla mozgat(Tabla tabla, Jarmu jarmu, int deltaSor, int deltaOszlop) {
         if (!lepesEllenorzo.elmozdithato(tabla, jarmu, deltaSor, deltaOszlop)) {
             System.out.println("Nem jó lépés!");
-            return false;
+            return null;
         }
 
-        // Végigmegyünk a járművel az útvonalon amíg szabad
         int aktualisSor = jarmu.pozicio().sor();
         int aktualisOszlop = jarmu.pozicio().oszlop();
 
@@ -33,7 +37,6 @@ public class JatekLogika {
                 break;
             }
 
-            // Ha ütközés lenne
             if (vanJarmu(tabla, kovetkezoSor, kovetkezoOszlop, jarmu)) {
                 break;
             }
@@ -42,26 +45,36 @@ public class JatekLogika {
             aktualisOszlop = kovetkezoOszlop;
         }
 
-        // Jarmu pozicioja frissítése a táblán
+        // Új jármű létrehozása az új pozícióval
+        Jarmu frissitettJarmu = new Jarmu(jarmu.azonosito(), jarmu.hossz(), jarmu.irany(), new Pozicio(aktualisSor, aktualisOszlop));
+
+        // A járművek listájának frissítése
+        List<Jarmu> ujJarmuvek = new ArrayList<>();
+        for (Jarmu j : tabla.jarmuvek()) {
+            if (j.azonosito().equals(jarmu.azonosito())) {
+                ujJarmuvek.add(frissitettJarmu);
+            } else {
+                ujJarmuvek.add(j);
+            }
+        }
+
         System.out.println("Jármű (" + jarmu.azonosito() + ") mozgatva: " +
                 jarmu.pozicio().sor() + "," + jarmu.pozicio().oszlop() +
                 " -> " + aktualisSor + "," + aktualisOszlop);
 
-        return true;
+        // Visszaadjuk az új táblát
+        return new Tabla(tabla.sorokSzama(), tabla.oszlopokSzama(), ujJarmuvek);
     }
 
     /*
      * Ellenőrzi hogy egy adott jármű kijutott e a tábláról a saját kijaratan
-     * pl hogy az A jármű a jobb oldalon a B jármű a bal oldalon
      */
     public boolean nyertE(Tabla tabla, String jarmuAzonosito) {
         for (Jarmu j : tabla.jarmuvek()) {
             if (j.azonosito().equals(jarmuAzonosito)) {
-                // Ha az A járműről van szó akkor a jobb szélen kell lennie
                 if ("A".equals(jarmuAzonosito)) {
                     return j.pozicio().oszlop() >= tabla.oszlopokSzama();
                 }
-                // Ha a B járműről van szó akkor a bal szélen kell lennie
                 if ("B".equals(jarmuAzonosito)) {
                     return j.pozicio().oszlop() < 0;
                 }

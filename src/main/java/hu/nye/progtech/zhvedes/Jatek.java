@@ -1,6 +1,7 @@
 package hu.nye.progtech.zhvedes;
 
 import hu.nye.progtech.zhvedes.ai.AiJatekos;
+import hu.nye.progtech.zhvedes.model.Jarmu;
 import hu.nye.progtech.zhvedes.model.Jatekos;
 import hu.nye.progtech.zhvedes.model.Tabla;
 import hu.nye.progtech.zhvedes.persistence.JatekosRepository;
@@ -40,7 +41,7 @@ public class Jatek {
         System.out.println("Szia " + jatekosNev + "! Kezdődhet a játék.");
 
         // High score megjelenítése
-        System.out.println("\n--- High Score ---");
+        System.out.println("\nHigh Score");
         List<Jatekos> highScores = jatekosRepository.osszesLekerdezese();
         if (highScores.isEmpty()) {
             System.out.println("Még nincs mentett játékos.");
@@ -57,7 +58,7 @@ public class Jatek {
         boolean jatekFut = true;
         while (jatekFut) {
             // Tábla kiírása
-            System.out.println("\n--- Jelenlegi tábla állapota ---");
+            System.out.println("\nJelenlegi tábla állapota");
             tablaUI.kirajzol(tabla);
 
             // Játékos lépése
@@ -67,21 +68,74 @@ public class Jatek {
 
             // Kilépés lehetősége
             if (bemenet.equalsIgnoreCase("kilépés") || bemenet.equalsIgnoreCase("exit")) {
-                System.out.println("Játék vége. Viszlát!");
+                System.out.println("Játék vége.");
                 break;
             }
 
-            // TODO: Bemenet feldolgozása és a mozgatás végrehajtása
+            //
+            String[] parancsok = bemenet.split(" ");
+            if (parancsok.length != 2) {
+                System.out.println("Hibás bemenet! (<jármű azonosító> <irány> (pl: A jobbra))");
+                continue;
+            }
+
+            String jarmuAzonosito = parancsok[0];
+            String irany = parancsok[1].toLowerCase();
+
+            // Megkeressük a járművet a táblán
+            Jarmu kivalasztottJarmu = null;
+            for (Jarmu j : tabla.jarmuvek()) {
+                if (j.azonosito().equalsIgnoreCase(jarmuAzonosito)) {
+                    kivalasztottJarmu = j;
+                    break;
+                }
+            }
+
+            if (kivalasztottJarmu == null) {
+                System.out.println("Nincs ilyen jármű a táblán!");
+                continue;
+            }
+
+            // Irány lefordítása deltákra
+            int deltaSor = 0;
+            int deltaOszlop = 0;
+            switch (irany) {
+                case "jobbra":
+                    deltaOszlop = 1;
+                    break;
+                case "balra":
+                    deltaOszlop = -1;
+                    break;
+                case "fel":
+                    deltaSor = -1;
+                    break;
+                case "le":
+                    deltaSor = 1;
+                    break;
+                default:
+                    System.out.println("Érvénytelen irány! Használat: jobbra, balra, fel, le");
+                    continue;
+            }
+
+            // Mozgatás végrehajtása és a tábla frissítése
+            Tabla ujTabla = jatekLogika.mozgat(tabla, kivalasztottJarmu, deltaSor, deltaOszlop);
+            if (ujTabla != null) {
+                tabla = ujTabla; // Tábla frissítése
+                System.out.println("Sikeres lépés!");
+            }
 
             // Győzelem ellenőrzése
             if (jatekLogika.nyertE(tabla, "A")) {
                 System.out.println("Gratulálok " + jatekosNev + "! Megnyerted a játékot!");
-                jatekosRepository.mentes(jatekosNev); // <-- ELMENTJÜK A GYŐZELMET AZ ADATBÁZISBA
+                jatekosRepository.mentes(jatekosNev);
                 jatekFut = false;
             } else {
                 // AI lépése
                 System.out.println("Másik játékos lép...");
-                aiJatekos.lep(tabla);
+                Tabla aiTabla = aiJatekos.lep(tabla);
+                if (aiTabla != null) {
+                    tabla = aiTabla;
+                }
 
                 // AI győzelmének ellenőrzése
                 if (jatekLogika.nyertE(tabla, "B")) {
