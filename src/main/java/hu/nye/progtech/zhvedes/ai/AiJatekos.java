@@ -17,14 +17,10 @@ public class AiJatekos {
         this.jatekLogika = new JatekLogika();
     }
 
-    /*
-     * Az AI kiválaszt egy véletlen járművet és megpróbálja elmozdítani
-     * egy véletlen irányba. Visszatér a frissített táblával.
-     */
     public Tabla lep(Tabla tabla) {
         List<Jarmu> jarmuvek = tabla.jarmuvek();
 
-        // Elsődlegesen a "B" járművet próbáljuk balra mozgatni (hogy kijusson)
+        // 1. Elsődlegesen a "B" járművet próbáljuk balra mozgatni
         for (Jarmu j : jarmuvek) {
             if (j.azonosito().equals("B")) {
                 Tabla ujTabla = jatekLogika.mozgat(tabla, j, 0, -1);
@@ -34,25 +30,23 @@ public class AiJatekos {
             }
         }
 
-        // Ha a B nem mozdítható, próbáljunk véletlenszerű járművekkel
-        for (int i = 0; i < 100; i++) {
-            Jarmu kivalasztott = jarmuvek.get(random.nextInt(jarmuvek.size()));
+        // 2. Ha a B nem mozdítható, próbáljunk véletlenszerűen egy járművet mozgatni
+        // A listát összekeverjük, hogy ne mindig ugyanazzal kezdjük
+        List<Jarmu> kevertJarmuvek = new java.util.ArrayList<>(jarmuvek);
+        java.util.Collections.shuffle(kevertJarmuvek, random);
 
-            int deltaSor = random.nextInt(3) - 1;
-            int deltaOszlop = random.nextInt(3) - 1;
-
-            // Ne lépjen átlósan
-            if (deltaSor != 0 && deltaOszlop != 0) {
-                continue;
-            }
-
-            Tabla ujTabla = jatekLogika.mozgat(tabla, kivalasztott, deltaSor, deltaOszlop);
-            if (ujTabla != null) {
-                return ujTabla;
+        for (Jarmu j : kevertJarmuvek) {
+            // Próbáljunk meg 4 irányból egyet-egyet
+            int[][] iranyok = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+            for (int[] irany : iranyok) {
+                Tabla ujTabla = jatekLogika.mozgat(tabla, j, irany[0], irany[1]);
+                if (ujTabla != null) {
+                    return ujTabla;
+                }
             }
         }
 
-        // Ha nem találtunk érvényes lépést, visszaadjuk az eredeti táblát
+        // 3. Ha semmi nem mozdítható, visszaadjuk az eredeti táblát
         return tabla;
     }
 }

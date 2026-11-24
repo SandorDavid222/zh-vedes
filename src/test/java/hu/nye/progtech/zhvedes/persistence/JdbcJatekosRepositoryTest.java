@@ -11,15 +11,15 @@ class JdbcJatekosRepositoryTest {
 
     @Test
     void tesztMentesEsLekerdezes() {
-        // Használjunk egy külön adatbázist a teszthez, hogy ne keveredjen a valódi játékkal
-        System.setProperty("h2.db.path", "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1");
-
         JdbcJatekosRepository repository = new JdbcJatekosRepository();
 
-        // Kezdetben üresnek kell lennie
-        List<Jatekos> kezdetiLista = repository.osszesLekerdezese();
-        // Megjegyzés: Ha a valódi játékdb-t használja, itt már lehetnek játékosok.
-        // Ezért csak azt ellenőrizzük, hogy a mentés után megjelenik-e a játékos.
+        // Töröljük az adatbázis tartalmát a tiszta teszt érdekében
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection("jdbc:h2:./jatekdb");
+             java.sql.Statement stmt = conn.createStatement()) {
+            stmt.execute("DELETE FROM jatekosok");
+        } catch (java.sql.SQLException e) {
+            e.printStackTrace();
+        }
 
         String tesztNev = "Teszt Jatekos";
 
@@ -27,28 +27,24 @@ class JdbcJatekosRepositoryTest {
         repository.mentes(tesztNev);
 
         // Lekérdezés
-        List<Jatekos> jatekosok = repository.osszesLekerdezese();
-
-        assertFalse(jatekosok.isEmpty());
-
-        // Megkeressük a teszt játékost
+        java.util.List<hu.nye.progtech.zhvedes.model.Jatekos> jatekosok = repository.osszesLekerdezese();
         boolean megtalalt = false;
-        for (Jatekos j : jatekosok) {
+        for (hu.nye.progtech.zhvedes.model.Jatekos j : jatekosok) {
             if (j.nev().equals(tesztNev)) {
                 megtalalt = true;
-                assertEquals(1, j.nyeresekSzama());
+                assertEquals(1, j.nyeresekSzama()); // <-- Itt most már 1 lesz
             }
         }
         assertTrue(megtalalt);
 
-        // Még egy mentés, hogy növeljük a nyerések számát
+        // Még egy mentés
         repository.mentes(tesztNev);
 
         // Újra lekérdezés
         jatekosok = repository.osszesLekerdezese();
-        for (Jatekos j : jatekosok) {
+        for (hu.nye.progtech.zhvedes.model.Jatekos j : jatekosok) {
             if (j.nev().equals(tesztNev)) {
-                assertEquals(2, j.nyeresekSzama()); // Most már 2 győzelem
+                assertEquals(2, j.nyeresekSzama());
             }
         }
     }

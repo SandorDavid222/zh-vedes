@@ -21,7 +21,7 @@ public class JatekLogika {
      */
     public Tabla mozgat(Tabla tabla, Jarmu jarmu, int deltaSor, int deltaOszlop) {
         if (!lepesEllenorzo.elmozdithato(tabla, jarmu, deltaSor, deltaOszlop)) {
-            System.out.println("Nem jó lépés!");
+            //System.out.println("Nem jó lépés!");
             return null;
         }
 
@@ -58,9 +58,9 @@ public class JatekLogika {
             }
         }
 
-        System.out.println("Jármű (" + jarmu.azonosito() + ") mozgatva: " +
-                jarmu.pozicio().sor() + "," + jarmu.pozicio().oszlop() +
-                " -> " + aktualisSor + "," + aktualisOszlop);
+        //System.out.println("Jármű (" + jarmu.azonosito() + ") mozgatva: " +
+                //jarmu.pozicio().sor() + "," + jarmu.pozicio().oszlop() +
+                //" -> " + aktualisSor + "," + aktualisOszlop);
 
         // Visszaadjuk az új táblát
         return new Tabla(tabla.sorokSzama(), tabla.oszlopokSzama(), ujJarmuvek);
