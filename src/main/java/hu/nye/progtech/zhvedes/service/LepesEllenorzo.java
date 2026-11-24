@@ -12,50 +12,42 @@ public class LepesEllenorzo {
       A metódus addig "tolja" a járművet, amíg szabad az út.
      */
     public boolean elmozdithato(Tabla tabla, Jarmu jarmu, int deltaSor, int deltaOszlop) {
-        // Csak a saját tengelye mentén mozoghat
-        if (jarmu.irany() == Jarmu.Irany.VIZSZINTES && deltaSor != 0) {
-            return false;
-        }
-        if (jarmu.irany() == Jarmu.Irany.FUGGOLEGES && deltaOszlop != 0) {
-            return false;
-        }
+        if (jarmu.irany() == Jarmu.Irany.VIZSZINTES && deltaSor != 0) return false;
+        if (jarmu.irany() == Jarmu.Irany.FUGGOLEGES && deltaOszlop != 0) return false;
 
-        // Végigmegyünk az útvonalon, amíg el nem érjük a pálya szélét vagy egy másik járművet
         int aktualisSor = jarmu.pozicio().sor();
         int aktualisOszlop = jarmu.pozicio().oszlop();
 
         while (true) {
-            // Egy lépéssel tovább
             aktualisSor += deltaSor;
             aktualisOszlop += deltaOszlop;
 
-            // Ha lelépne a pályáról akkor megállunk
+            // Ha lelépne a pályáról, megállunk
             if (aktualisSor < 0 || aktualisSor >= tabla.sorokSzama() ||
                     aktualisOszlop < 0 || aktualisOszlop >= tabla.oszlopokSzama()) {
                 break;
             }
 
-            // Ha ütközik egy másik járművel akkor sem léphet oda
+            // Ha ütközik, megállunk
             if (vanJarmu(tabla, aktualisSor, aktualisOszlop, jarmu)) {
                 break;
             }
-
-            return true;
+            return true; // Ha az első szabad mezőig eljutott, akkor mozdítható
         }
         return false;
     }
 
-    /*
-     * Ellenőrzés hogy egy adott mezőn áll e más jármű.
-     */
     private boolean vanJarmu(Tabla tabla, int sor, int oszlop, Jarmu sajatJarmu) {
         for (Jarmu j : tabla.jarmuvek()) {
-            if (j.azonosito().equals(sajatJarmu.azonosito())) {
-                continue;
-            }
-            // Ha a jármű pozíciója megegyezik a vizsgált mezővel
-            if (j.pozicio().sor() == sor && j.pozicio().oszlop() == oszlop) {
-                return true;
+            if (j.azonosito().equals(sajatJarmu.azonosito())) continue;
+
+            // Végigmegyünk a másik jármű összes elfoglalt mezőjén
+            for (int i = 0; i < j.hossz(); i++) {
+                int jSor = j.pozicio().sor() + (j.irany() == Jarmu.Irany.FUGGOLEGES ? i : 0);
+                int jOszlop = j.pozicio().oszlop() + (j.irany() == Jarmu.Irany.VIZSZINTES ? i : 0);
+                if (jSor == sor && jOszlop == oszlop) {
+                    return true;
+                }
             }
         }
         return false;

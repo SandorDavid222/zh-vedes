@@ -90,6 +90,15 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
+                <configuration>
+                    <excludes>
+                        <!-- Kizárjuk a nem üzleti logikát tartalmazó osztályokat a jelentésből -->
+                        <exclude>hu/nye/progtech/zhvedes/Main.class</exclude>
+                        <exclude>hu/nye/progtech/zhvedes/Jatek.class</exclude>
+                        <exclude>hu/nye/progtech/zhvedes/model/**</exclude>
+                        <exclude>hu/nye/progtech/zhvedes/ui/**</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
