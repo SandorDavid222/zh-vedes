@@ -8,8 +8,8 @@ import hu.nye.progtech.zhvedes.persistence.JdbcJatekosRepository;
 import hu.nye.progtech.zhvedes.persistence.SzovegesTablaBetolto;
 import hu.nye.progtech.zhvedes.persistence.TablaBetolto;
 import hu.nye.progtech.zhvedes.service.JatekLogika;
+import hu.nye.progtech.zhvedes.ui.TablaUI;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -20,6 +20,7 @@ public class Jatek {
     private final AiJatekos aiJatekos;
     private final TablaBetolto tablaBetolto;
     private final JatekosRepository jatekosRepository;
+    private final TablaUI tablaUI;
 
     public Jatek() {
         this.scanner = new Scanner(System.in);
@@ -27,6 +28,7 @@ public class Jatek {
         this.aiJatekos = new AiJatekos();
         this.tablaBetolto = new SzovegesTablaBetolto();
         this.jatekosRepository = new JdbcJatekosRepository();
+        this.tablaUI = new TablaUI();
     }
 
     public void start() {
@@ -50,23 +52,13 @@ public class Jatek {
         System.out.println("------------------\n");
 
         // Pálya betöltése
-        Tabla tabla = tablaBetolto.betolt("alap-palya.txt");
-        if (tabla == null) {
-            tabla = tablaBetolto.betoltAlap();
-        }
-
-        // Ha a betöltés null t adna vissza
-        if (tabla == null) {
-            System.out.println("FIGYELEM: A tábla betöltése még nincs kész.");
-            tabla = new Tabla(6, 12, new ArrayList<>());
-        }
+        Tabla tabla = tablaBetolto.betolt("palya.txt");
 
         boolean jatekFut = true;
         while (jatekFut) {
             // Tábla kiírása
-            System.out.println("--- Jelenlegi tábla állapota ---");
-            System.out.println("Méret: " + tabla.sorokSzama() + "x" + tabla.oszlopokSzama());
-            System.out.println("Járművek száma: " + tabla.jarmuvek().size());
+            System.out.println("\n--- Jelenlegi tábla állapota ---");
+            tablaUI.kirajzol(tabla);
 
             // Játékos lépése
             System.out.println("\nTe jössz! (Írj be egy jármű azonosítót és irányt, pl: 'A jobbra' vagy 'B fel')");
@@ -78,6 +70,8 @@ public class Jatek {
                 System.out.println("Játék vége. Viszlát!");
                 break;
             }
+
+            // TODO: Bemenet feldolgozása és a mozgatás végrehajtása
 
             // Győzelem ellenőrzése
             if (jatekLogika.nyertE(tabla, "A")) {
