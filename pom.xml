@@ -92,11 +92,12 @@
                 <version>0.8.12</version>
                 <configuration>
                     <excludes>
-                        <!-- Kizárjuk a nem üzleti logikát tartalmazó osztályokat a jelentésből -->
+                        <!-- Kizárjuk a nem üzleti logikát tartalmazó osztályokat -->
                         <exclude>hu/nye/progtech/zhvedes/Main.class</exclude>
                         <exclude>hu/nye/progtech/zhvedes/Jatek.class</exclude>
                         <exclude>hu/nye/progtech/zhvedes/model/**</exclude>
                         <exclude>hu/nye/progtech/zhvedes/ui/**</exclude>
+                        <exclude>hu/nye/progtech/zhvedes/ai/**</exclude> <!-- ÚJ SOR -->
                     </excludes>
                 </configuration>
                 <executions>
