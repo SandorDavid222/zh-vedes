@@ -10,11 +10,15 @@ import hu.nye.progtech.zhvedes.persistence.SzovegesTablaBetolto;
 import hu.nye.progtech.zhvedes.persistence.TablaBetolto;
 import hu.nye.progtech.zhvedes.service.JatekLogika;
 import hu.nye.progtech.zhvedes.ui.TablaUI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Scanner;
 
 public class Jatek {
+
+    private static final Logger logger = LoggerFactory.getLogger(Jatek.class);
 
     private final Scanner scanner;
     private final JatekLogika jatekLogika;
@@ -33,24 +37,24 @@ public class Jatek {
     }
 
     public void start() {
-        System.out.println("Üdvözöllek a játékban.");
+        logger.info("Üdvözöllek a játékban.");
 
         // Játékos nevének bekérése
         System.out.print("Név:  ");
         String jatekosNev = scanner.nextLine();
-        System.out.println("Szia " + jatekosNev + "! Kezdődhet a játék.");
+        logger.info("Szia {}! Kezdődhet a játék.", jatekosNev);
 
         // High score megjelenítése
-        System.out.println("\nHigh Score");
+        logger.info("\nHigh Score");
         List<Jatekos> highScores = jatekosRepository.osszesLekerdezese();
         if (highScores.isEmpty()) {
-            System.out.println("Még nincs mentett játékos.");
+            logger.info("Még nincs mentett játékos.");
         } else {
             for (Jatekos j : highScores) {
-                System.out.println(j.nev() + ": " + j.nyeresekSzama() + " győzelem");
+                logger.info("{}: {} győzelem", j.nev(), j.nyeresekSzama());
             }
         }
-        System.out.println("------------------\n");
+        logger.info("------------------\n");
 
         // Pálya betöltése
         Tabla tabla = tablaBetolto.betolt("palya.txt");
@@ -58,7 +62,7 @@ public class Jatek {
         boolean jatekFut = true;
         while (jatekFut) {
             // Tábla kiírása
-            System.out.println("\nJelenlegi tábla állapota");
+            logger.info("\nJelenlegi tábla állapota");
             tablaUI.kirajzol(tabla);
 
             // Játékos lépése
@@ -68,14 +72,13 @@ public class Jatek {
 
             // Kilépés lehetősége
             if (bemenet.equalsIgnoreCase("kilépés") || bemenet.equalsIgnoreCase("exit")) {
-                System.out.println("Játék vége.");
+                logger.info("Játék vége.");
                 break;
             }
 
-            //
             String[] parancsok = bemenet.split(" ");
             if (parancsok.length != 2) {
-                System.out.println("Hibás bemenet! (<jármű azonosító> <irány> (pl: A jobbra))");
+                logger.warn("Hibás bemenet! (<jármű azonosító> <irány> (pl: A jobbra))");
                 continue;
             }
 
@@ -92,7 +95,7 @@ public class Jatek {
             }
 
             if (kivalasztottJarmu == null) {
-                System.out.println("Nincs ilyen jármű a táblán!");
+                logger.warn("Nincs ilyen jármű a táblán!");
                 continue;
             }
 
@@ -113,7 +116,7 @@ public class Jatek {
                     deltaSor = 1;
                     break;
                 default:
-                    System.out.println("Érvénytelen irány! Használat: jobbra, balra, fel, le");
+                    logger.warn("Érvénytelen irány! Használat: jobbra, balra, fel, le");
                     continue;
             }
 
@@ -121,17 +124,17 @@ public class Jatek {
             Tabla ujTabla = jatekLogika.mozgat(tabla, kivalasztottJarmu, deltaSor, deltaOszlop);
             if (ujTabla != null) {
                 tabla = ujTabla; // Tábla frissítése
-                System.out.println("Sikeres lépés!");
+                logger.info("Sikeres lépés!");
             }
 
             // Győzelem ellenőrzése
             if (jatekLogika.nyertE(tabla, "A")) {
-                System.out.println("Gratulálok " + jatekosNev + "! Megnyerted a játékot!");
+                logger.info("Gratulálok {}! Megnyerted a játékot!", jatekosNev);
                 jatekosRepository.mentes(jatekosNev);
                 jatekFut = false;
             } else {
                 // AI lépése
-                System.out.println("Másik játékos lép...");
+                logger.info("Másik játékos lép...");
                 Tabla aiTabla = aiJatekos.lep(tabla);
                 if (aiTabla != null) {
                     tabla = aiTabla;
@@ -139,7 +142,7 @@ public class Jatek {
 
                 // AI győzelmének ellenőrzése
                 if (jatekLogika.nyertE(tabla, "B")) {
-                    System.out.println("Sajnos az ellenfeled nyert! Próbáld újra!");
+                    logger.info("Sajnos az ellenfeled nyert! Próbáld újra!");
                     jatekFut = false;
                 }
             }
